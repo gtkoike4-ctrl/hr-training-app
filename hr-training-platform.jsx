@@ -154,7 +154,7 @@ function ChatView() {
     const userMsg=input.trim(); setInput("");
     setMessages(prev=>[...prev,{role:"user",text:userMsg}]); setLoading(true);
     try {
-      const res=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"あなたは製造・メーカー系企業の新入社員教育AIアシスタントです。安全管理、製造プロセス、品質管理、ビジネスマナーなどについて、わかりやすく丁寧に日本語で回答してください。回答は簡潔にまとめ、必要に応じて箇条書きを使ってください。",messages:messages.filter(m=>m.role!=="system").map(m=>({role:m.role,content:m.text})).concat([{role:"user",content:userMsg}])})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"あなたは製造・メーカー系企業の新入社員教育AIアシスタントです。安全管理、製造プロセス、品質管理、ビジネスマナーなどについて、わかりやすく丁寧に日本語で回答してください。回答は簡潔にまとめ、必要に応じて箇条書きを使ってください。",messages:messages.filter(m=>m.role!=="system").map(m=>({role:m.role,content:m.text})).concat([{role:"user",content:userMsg}])})});
       const data=await res.json();
       setMessages(prev=>[...prev,{role:"assistant",text:data.content?.map(b=>b.text||"").join("")||"エラーが発生しました。"}]);
     } catch { setMessages(prev=>[...prev,{role:"assistant",text:"通信エラーが発生しました。"}]); }
@@ -329,7 +329,7 @@ function TestManager({ questions, setQuestions, formScores, setFormScores }) {
         r.onerror=()=>rej(new Error("読み込み失敗"));
         r.readAsDataURL(file);
       });
-      const resp=await fetch("/api/claude",{
+      const resp=await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
@@ -426,7 +426,7 @@ function TestManager({ questions, setQuestions, formScores, setFormScores }) {
     if(!aiTopic.trim()) return;
     setAiLoading(true);setAiResult("");
     try{
-      const res=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"あなたは製造・メーカー系企業の研修テスト作成AIです。指定されたトピックについて4択問題をJSON配列形式のみで返してください。説明文やMarkdownは不要です。形式:[{\"category\":\"カテゴリ名\",\"difficulty\":\"基礎\",\"q\":\"問題文\",\"options\":[\"選択肢1\",\"選択肢2\",\"選択肢3\",\"選択肢4\"],\"ans\":正解のインデックス}]",messages:[{role:"user",content:`製造業新入社員向けの4択問題を${aiCount}問作成：「${aiTopic}」`}]})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"あなたは製造・メーカー系企業の研修テスト作成AIです。指定されたトピックについて4択問題をJSON配列形式のみで返してください。説明文やMarkdownは不要です。形式:[{\"category\":\"カテゴリ名\",\"difficulty\":\"基礎\",\"q\":\"問題文\",\"options\":[\"選択肢1\",\"選択肢2\",\"選択肢3\",\"選択肢4\"],\"ans\":正解のインデックス}]",messages:[{role:"user",content:`製造業新入社員向けの4択問題を${aiCount}問作成：「${aiTopic}」`}]})});
       const data=await res.json();
       const text=data.content?.map(b=>b.text||"").join("")||"[]";
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
@@ -763,7 +763,7 @@ function AnalysisView({ employees }) {
   async function runAI(){
     setAnalyzing(true);setInsight("");
     try{
-      const res=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"あなたは製造業の人材分析の専門家AIです。提供されたデータから重回帰分析的な観点で洞察を提供してください。日本語で簡潔にまとめてください。",messages:[{role:"user",content:`以下の新入社員データを分析し、(1)早期戦力化に最も影響する要因、(2)離職リスクの高い社員への提言、(3)採用チャネル別のROI評価を提供してください。\n\n${JSON.stringify(employees)}`}]})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"あなたは製造業の人材分析の専門家AIです。提供されたデータから重回帰分析的な観点で洞察を提供してください。日本語で簡潔にまとめてください。",messages:[{role:"user",content:`以下の新入社員データを分析し、(1)早期戦力化に最も影響する要因、(2)離職リスクの高い社員への提言、(3)採用チャネル別のROI評価を提供してください。\n\n${JSON.stringify(employees)}`}]})});
       const data=await res.json();
       setInsight(data.content?.map(b=>b.text||"").join("")||"分析に失敗しました。");
     } catch{setInsight("通信エラーが発生しました。");}
